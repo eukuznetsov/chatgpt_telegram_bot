@@ -33,7 +33,7 @@ OPENAI_COMPLETION_OPTIONS_16K = {
 
 class ChatGPT:
     def __init__(self, model="gpt-3.5-turbo"):
-        assert model in {"text-davinci-003", "gpt-3.5-turbo-16k", "gpt-3.5-turbo", "gpt-3.5-turbo-16k", "gpt-4", "gpt-4-1106-preview"}, f"Unknown model: {model}"
+        assert model in {"text-davinci-003", "gpt-3.5-turbo-16k", "gpt-3.5-turbo", "gpt-3.5-turbo-16k", "gpt-4", "gpt-4-vision-preview", "gpt-4-1106-preview"}, f"Unknown model: {model}"
         self.model = model
 
     async def send_message(self, message, dialog_messages=[], chat_mode="assistant"):
@@ -92,6 +92,24 @@ class ChatGPT:
         answer = None
         while answer is None:
             try:
+                if self.model == "gpt-4-vision-preview":
+                    messages = self._generate_prompt_messages(message, dialog_messages, chat_mode)
+                    r_gen = await openai.ChatCompletion.acreate(
+                        model="gpt-4",
+                        messages=messages,
+                        stream=True,
+                        **OPENAI_COMPLETION_OPTIONS
+                    )
+
+                    answer = ""
+                    async for r_item in r_gen:
+                        delta = r_item.choices[0].delta
+                        if "content" in delta:
+                            answer += delta.content
+                            n_input_tokens, n_output_tokens = self._count_tokens_from_messages(messages, answer, model=self.model)
+                            n_first_dialog_messages_removed = n_dialog_messages_before - len(dialog_messages)
+                            yield "not_finished", answer, (n_input_tokens, n_output_tokens), n_first_dialog_messages_removed
+
                 if self.model in {"gpt-3.5-turbo-16k", "gpt-3.5-turbo", "gpt-4", "gpt-4-1106-preview"}:
                     messages = self._generate_prompt_messages(message, dialog_messages, chat_mode)
                     r_gen = await openai.ChatCompletion.acreate(
@@ -297,7 +315,7 @@ class ChatGPT:
         elif model == "gpt-4":
             tokens_per_message = 3
             tokens_per_name = 1
-        elif model == "gpt-4-1106-preview":
+        elif model == "gpt-4-1106-preview" or model == "gpt-4-vision-preview":
             tokens_per_message = 3
             tokens_per_name = 1
         else:
@@ -308,9 +326,28 @@ class ChatGPT:
         for message in messages:
             n_input_tokens += tokens_per_message
             for key, value in message.items():
-                n_input_tokens += len(encoding.encode(value))
-                if key == "name":
-                    n_input_tokens += tokens_per_name
+                if key == "content":
+                    if isinstance(value, str):
+                        n_input_tokens += len(encoding.encode(value))
+                    elif isinstance(value, list):
+                        for item in value:
+                            if item["type"] == "text":
+                                n_input_tokens += len(encoding.encode(item["text"]))
+                            elif item["type"] == "image":
+                                n_input_tokens += 2
+                            else:
+                                raise ValueError(f"Unknown message type: {item['type']}")
+                elif key == "role":
+                    if value == "user":
+                        n_input_tokens += tokens_per_name
+                    elif value == "assistant":
+                        n_input_tokens += 1
+                    elif value == "system":
+                        n_input_tokens += 1
+                    else:
+                        raise ValueError(f"Unknown role: {value}")
+                else:
+                    raise ValueError(f"Unknown message key: {key}")
 
         n_input_tokens += 2
 

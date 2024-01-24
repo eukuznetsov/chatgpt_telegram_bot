@@ -319,6 +319,8 @@ async def _vision_message_handle_fn(
 
 
 async def message_handle(update: Update, context: CallbackContext, message=None, use_new_dialog_timeout=False):
+
+
     # check if bot was mentioned (for group chats)
     if not await is_bot_mentioned(update, context):
         return
@@ -345,6 +347,12 @@ async def message_handle(update: Update, context: CallbackContext, message=None,
         return
 
     current_model = db.get_user_attribute(user_id, "current_model")
+
+    if update.message.photo is not None and len(update.message.photo) > 0:
+        if current_model != "gpt-4-vision-preview":
+            current_model = "gpt-4-vision-preview"
+            db.set_user_attribute(user_id, "current_model", "gpt-4-vision-preview")
+            await update.message.reply_text("Vision model is switched on", parse_mode=ParseMode.HTML)
 
     async def message_handle_fn():
         # new dialog timeout
