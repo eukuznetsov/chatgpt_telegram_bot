@@ -53,6 +53,19 @@ info:
       fast: 4
       cheap: 3
 
+  gpt-4-vision-preview:
+    type: chat_completion
+    name: GPT-4 Vision
+    description: Ability to <b>understand images</b>, in addition to all other GPT-4 Turbo capabilties.
+
+    price_per_1000_input_tokens: 0.01
+    price_per_1000_output_tokens: 0.03
+
+    scores:
+      smart: 5
+      fast: 4
+      cheap: 3
+
   text-davinci-003:
     type: completion
     name: GPT-3.5
