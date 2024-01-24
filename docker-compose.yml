@@ -6,9 +6,11 @@ services:
     image: mongo:latest
     restart: always
     ports:
-      - 127.0.0.1:${MONGODB_PORT:-27017}:${MONGODB_PORT:-27017}
+      - 127.0.0.1:${MONGODB_PORT:-29017}:${MONGODB_PORT:-29017}
     volumes:
       - ${MONGODB_PATH:-./mongodb}:/data/db
+    networks:
+      - chatgpt_bot
     # TODO: add auth
 
   chatgpt_telegram_bot:
@@ -20,3 +22,10 @@ services:
       dockerfile: Dockerfile
     depends_on:
       - mongo
+    networks:
+        - chatgpt_bot
+
+
+networks:
+  chatgpt_bot:
+    driver: bridge
