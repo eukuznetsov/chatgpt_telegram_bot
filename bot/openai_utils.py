@@ -2,6 +2,8 @@ import config
 
 import tiktoken
 import openai
+import base64
+from io import BytesIO
 
 
 # setup openai
