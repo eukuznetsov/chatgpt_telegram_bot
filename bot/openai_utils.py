@@ -280,24 +280,34 @@ class ChatGPT:
     def _generate_prompt_messages(self, message, dialog_messages, chat_mode, image_buffer: BytesIO = None):
         prompt = config.chat_modes[chat_mode]["prompt_start"]
 
-        messages = [{"role": "system", "content": prompt}]
-        user_messages = {"role": "user", "content": []}
-        for dialog_message in dialog_messages:
-            user_messages["content"].append(
-                {"type": "text", "text": dialog_message["user"]}
-            )
-            messages.append({"role": "assistant", "content": dialog_message["bot"]})
-        user_messages["content"].append({"type": "text", "text": message})
-
+        # TODO: a temporary fix for the issue with the image
         if image_buffer is not None:
-            user_messages["content"].append(
-                {
-                    "type": "image",
-                    "image": self._encode_image(image_buffer),
-                }
-            )
+            messages = [{"role": "system", "content": prompt}]
+            user_messages = {"role": "user", "content": []}
+            for dialog_message in dialog_messages:
+                user_messages["content"].append(
+                    {"type": "text", "text": dialog_message["user"]}
+                )
+                messages.append({"role": "assistant", "content": dialog_message["bot"]})
+            user_messages["content"].append({"type": "text", "text": message})
 
-        return messages + ([user_messages] if len(user_messages["content"]) > 0 else [])
+            if image_buffer is not None:
+                user_messages["content"].append(
+                    {
+                        "type": "image",
+                        "image": self._encode_image(image_buffer),
+                    }
+                )
+
+            return messages + ([user_messages] if len(user_messages["content"]) > 0 else [])
+        else:
+            messages = [{"role": "system", "content": prompt}]
+            for dialog_message in dialog_messages:
+                messages.append({"role": "user", "content": dialog_message["user"]})
+                messages.append({"role": "assistant", "content": dialog_message["bot"]})
+            messages.append({"role": "user", "content": message})
+            return messages
+
 
     def _postprocess_answer(self, answer):
         answer = answer.strip()
