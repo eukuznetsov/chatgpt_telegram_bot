@@ -33,7 +33,7 @@ OPENAI_COMPLETION_OPTIONS_16K = {
 
 class ChatGPT:
     def __init__(self, model="gpt-3.5-turbo"):
-        assert model in {"text-davinci-003", "gpt-3.5-turbo-16k", "gpt-3.5-turbo", "gpt-3.5-turbo-16k", "gpt-4", "gpt-4-vision-preview", "gpt-4-1106-preview"}, f"Unknown model: {model}"
+        assert model in {"text-davinci-003", "gpt-3.5-turbo-16k", "gpt-3.5-turbo", "gpt-3.5-turbo-16k", "gpt-4", "gpt-4-vision-preview", "gpt-4-1106-preview", "gpt-4o"}, f"Unknown model: {model}"
         self.model = model
 
     async def send_message(self, message, dialog_messages=[], chat_mode="assistant"):
