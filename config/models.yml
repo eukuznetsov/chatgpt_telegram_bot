@@ -1,4 +1,4 @@
-available_text_models: ["gpt-3.5-turbo", "gpt-4", "gpt-3.5-turbo-16k", "gpt-4-vision-preview", "gpt-4-1106-preview"]
+available_text_models: ["gpt-3.5-turbo", "gpt-4", "gpt-3.5-turbo-16k", "gpt-4-vision-preview", "gpt-4-1106-preview", "gpt-4o"]
 
 info:
   gpt-3.5-turbo:
@@ -52,6 +52,19 @@ info:
       smart: 5
       fast: 4
       cheap: 3
+
+  gpt-4o:
+    type: chat_completion
+    name: GPT-4 Omni
+    description: GPT-4 Omni
+
+    price_per_1000_input_tokens: 0.01
+    price_per_1000_output_tokens: 0.03
+
+    scores:
+      smart: 5
+      fast: 4
+      cheap: 4
 
   gpt-4-vision-preview:
     type: chat_completion
